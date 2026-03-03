@@ -152,17 +152,33 @@ def select_daily_pick():
             if play:
                 return play
     return None
-def build_thread() -> list[str]:
-    # Round 1 = stable template. Later we swap in “odds → 1 pick”.
+def build_thread(play: dict) -> list[str]:
+    sport_map = {
+        "basketball_nba": "NBA",
+        "icehockey_nhl": "NHL",
+        "soccer_epl": "EPL",
+        "soccer_uefa_champs_league": "UCL",
+        "americanfootball_nfl": "NFL",
+        "none": "NO BET",
+    }
+    league = sport_map.get(play.get("sport", "unknown"), play.get("sport", "unknown"))
+
+    # If we ever run a "no bet" day, odds may be blank
+    odds = play.get("odds", "")
+    odds_str = f" ({odds})" if odds not in ("", None) else ""
+
+    pick_line = f"✅ OFFICIAL ({league}): {play.get('pick','')}"+odds_str+" — 1.0u"
+    meta_line = f"{play.get('event','')} | Book: {play.get('book','')}"
+
     return [
-        "🧪 BET LAB BETS — Daily Board\n1 official play. Tracked. No fluff.",
+        f"🧪 BET LAB BETS — Daily Board\n1 official play. Tracked. {league} today.",
         "Rules:\n• 1 play/day\n• 1u flat\n• Best line or no bet\n• No chasing",
         "Record: 0–0 | +0.00u | ROI 0.0%\n(Tracking begins today.)",
-        "✅ OFFICIAL: [AUTO PICK PLACEHOLDER]\nOdds: [ODDS]\n1.0u\nPlay only if price holds.",
-        "Why:\n• Market/price note\n• Quick matchup note\n(No guarantees.)",
+        pick_line,
+        meta_line,
+        f"Price rule: {play.get('price_rule','')}",
+        "Why this made the cut:\n• Liquid market (ML/spread/total)\n• Best price found across books\n• No forcing action",
         "🚫 Pass list:\nEverything else until the number is right.",
-        "👀 Watchlist:\nIf line improves, it’s noted. Otherwise, no action.",
-        "Risk plan: max 1.0u today.\nIf it loses, we move on.",
         "Recap tonight + record update.\nWin or lose, it gets logged.",
         "Follow + turn on notifications if you want the daily board.\n21+ | Entertainment only."
     ]
