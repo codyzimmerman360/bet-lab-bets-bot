@@ -191,7 +191,19 @@ def main():
 
     auth = OAuth1(consumer_key, consumer_secret, access_token, access_secret)
 
-    tweets = build_thread()
+    play = select_daily_pick()
+if not play:
+    play = {
+        "sport": "none",
+        "event": "No qualifying slate found",
+        "market": "none",
+        "pick": "NO BET (no price worth taking)",
+        "odds": "",
+        "book": "",
+        "price_rule": "No action unless the number is right",
+    }
+
+tweets = build_thread(play)
     if not (8 <= len(tweets) <= 12):
         raise ValueError("Thread must be 8–12 tweets.")
     for t in tweets:
