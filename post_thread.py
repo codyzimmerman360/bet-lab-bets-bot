@@ -1,3 +1,5 @@
+print("SCRIPT STARTED")
+
 import os
 import time
 import json
@@ -16,7 +18,6 @@ def create_tweet(auth: OAuth1, text: str, reply_to_id: str | None = None) -> str
         raise RuntimeError(f"X API error {r.status_code}: {r.text}")
 
     return r.json()["data"]["id"]
-
 from datetime import datetime, timezone, timedelta
 
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
@@ -184,6 +185,7 @@ def build_thread(play: dict) -> list[str]:
     ]
 
 def main():
+    print("MAIN STARTED")
     consumer_key = os.environ["X_CONSUMER_KEY"]
     consumer_secret = os.environ["X_CONSUMER_SECRET"]
     access_token = os.environ["X_ACCESS_TOKEN"]
@@ -215,8 +217,10 @@ def main():
     prev_id = None
     posted_ids = []
 
+print("ABOUT TO POST", len(tweets), "TWEETS")
     for i, text in enumerate(tweets):
         tweet_id = create_tweet(auth, text, reply_to_id=prev_id)
+        print("POSTED", i+1, "ID", tweet_id)
         posted_ids.append(tweet_id)
         if i == 0:
             first_id = tweet_id
