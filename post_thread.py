@@ -92,7 +92,7 @@ def normalize_book(name: str) -> str:
     n = name.strip()
     n = n.replace("Sportsbook", "").strip()
     n = n.replace("Sports Book", "").strip()
-    return n
+     n
     
 def create_tweet(auth: OAuth1, text: str, reply_to_id: str | None = None) -> str:
     payload = {"text": text}
@@ -103,7 +103,7 @@ def create_tweet(auth: OAuth1, text: str, reply_to_id: str | None = None) -> str
     if r.status_code >= 300:
         raise RuntimeError(f"X API error {r.status_code}: {r.text}")
 
-    return r.json()["data"]["id"]
+     r.json()["data"]["id"]
 
 
 def _get_json(url, params):
@@ -393,7 +393,6 @@ def main():
     lock_id = acquire_daily_lock(today)
 if not lock_id:
     print("Already posted/locked today. Exiting.")
-    return
 
     play = select_daily_pick(odds_api_key)
     if not play:
