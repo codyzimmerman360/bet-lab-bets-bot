@@ -10,6 +10,10 @@ from requests_oauthlib import OAuth1
 import random
 import hashlib
 
+AIRTABLE_TOKEN = os.environ.get("AIRTABLE_TOKEN", "")
+AIRTABLE_BASE_ID = os.environ.get("AIRTABLE_BASE_ID", "")
+AIRTABLE_RUNS_TABLE = os.environ.get("AIRTABLE_RUNS_TABLE", "runs")
+
 HOOKS = [
     "Alright fellas, one clean one today. Not forcing it.",
     "Boys. Quick card. One play. In and out.",
@@ -281,11 +285,54 @@ def build_thread(play: dict) -> list[str]:
     f"{cta}\n21+ | Entertainment only.",
 ]
 
+def airtable_headers():
+    return {
+        "Authorization": f"Bearer {AIRTABLE_TOKEN}",
+        "Content-Type": "application/json",
+    }
+
+def already_posted_today(date_str: str) -> bool:
+    if not AIRTABLE_TOKEN or not AIRTABLE_BASE_ID:
+        return False  # if not configured, don't block posting
+
+    # filterByFormula checks if a record exists for today's date with status "posted"
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_RUNS_TABLE}"
+    params = {
+        "maxRecords": 1,
+        "filterByFormula": f"AND({{run_date}}='{date_str}', {{status}}='posted')"
+    }
+    r = requests.get(url, headers=airtable_headers(), params=params, timeout=30)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Airtable check failed {r.status_code}: {r.text}")
+    data = r.json()
+    return len(data.get("records", [])) > 0
+
+def log_posted(date_str: str, note: str = ""):
+    if not AIRTABLE_TOKEN or not AIRTABLE_BASE_ID:
+        return
+
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_RUNS_TABLE}"
+    payload = {
+        "fields": {
+            "run_date": date_str,
+            "status": "posted",
+            "error": note,
+        }
+    }
+    r = requests.post(url, headers=airtable_headers(), json=payload, timeout=30)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Airtable log failed {r.status_code}: {r.text}")
+        
 def main():
     print("MAIN STARTED")
     
     if os.environ.get("BOT_ENABLED", "true").lower() != "true":
         print("BOT_DISABLED: exiting.")
+        return
+
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if already_posted_today(today):
+        print("Already posted today (Airtable). Exiting.")
         return
 
     odds_api_key = os.environ.get("ODDS_API_KEY", "")
@@ -335,6 +382,7 @@ def main():
         time.sleep(1.2)
 
     print(json.dumps({"first_tweet_id": first_id, "tweet_ids": posted_ids, "tweet_count": len(tweets)}))
+    log_posted(today, note=f"first_tweet_id={first_id}")
 
 
 if __name__ == "__main__":
