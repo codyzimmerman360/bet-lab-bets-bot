@@ -31,3 +31,4 @@ jobs:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_RUNS_TABLE: ${{ secrets.AIRTABLE_RUNS_TABLE }}
+          AIRTABLE_RUNS_TABLE_ID: ${{ secrets.AIRTABLE_RUNS_TABLE_ID }}
