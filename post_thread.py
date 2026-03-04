@@ -289,6 +289,7 @@ def build_thread(play: dict) -> list[str]:
 def airtable_headers():
     
 def runs_table_id():
+    # runs table id helper
     return os.environ.get("AIRTABLE_RUNS_TABLE_ID", AIRTABLE_RUNS_TABLE)
 
 def runs_url():
