@@ -287,6 +287,10 @@ def build_thread(play: dict) -> list[str]:
 ]
 
 def airtable_headers():
+    return {
+        "Authorization": f"Bearer {AIRTABLE_TOKEN}",
+        "Content-Type": "application/json",
+    }
     
 def runs_table_id():
     # runs table id helper
