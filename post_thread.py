@@ -262,8 +262,9 @@ def acquire_daily_lock(date_str: str) -> str | None:
         raise RuntimeError("Airtable not configured; refusing to post to avoid duplicates.")
 
     params = {
-        "maxRecords": 1,
-        "filterByFormula": f"AND({{run_date}}='{date_str}', OR({{status}}='locked', {{status}}='posted'))"
+    "maxRecords": 1,
+    "filterByFormula": f"{{run_date}}='{date_str}'"
+
     }
     r = requests.get(runs_url(), headers=airtable_headers(), params=params, timeout=30)
     if r.status_code >= 300:
