@@ -92,7 +92,7 @@ def normalize_book(name: str) -> str:
     n = name.strip()
     n = n.replace("Sportsbook", "").strip()
     n = n.replace("Sports Book", "").strip()
-     n
+    return n
     
 def create_tweet(auth: OAuth1, text: str, reply_to_id: str | None = None) -> str:
     payload = {"text": text}
