@@ -103,7 +103,7 @@ def create_tweet(auth: OAuth1, text: str, reply_to_id: str | None = None) -> str
     if r.status_code >= 300:
         raise RuntimeError(f"X API error {r.status_code}: {r.text}")
 
-     return r.json()["data"]["id"]
+    return r.json()["data"]["id"]
 
 
 def _get_json(url, params):
