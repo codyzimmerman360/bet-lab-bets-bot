@@ -283,6 +283,10 @@ def build_thread(play: dict) -> list[str]:
 
 def main():
     print("MAIN STARTED")
+    
+    if os.environ.get("BOT_ENABLED", "true").lower() != "true":
+        print("BOT_DISABLED: exiting.")
+        return
 
     odds_api_key = os.environ.get("ODDS_API_KEY", "")
     if not odds_api_key:
