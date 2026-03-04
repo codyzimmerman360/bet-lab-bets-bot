@@ -7,6 +7,58 @@ import requests
 from datetime import datetime, timezone, timedelta
 from requests_oauthlib import OAuth1
 
+import random
+import hashlib
+
+HOOKS = [
+    "Alright fellas, one clean one today. Not forcing it.",
+    "Boys. Quick card. One play. In and out.",
+    "I’m not doing the 6-play circus today. One spot I actually like.",
+    "Daily board: one official. If you’re itching, go lift.",
+    "One play today. If the number moves, we don’t chase. Simple.",
+    "I’m keeping it boring today — boring is how you keep units.",
+    "We’re not donating today. One play at the right number.",
+    "Short and sweet: one official. Everything else is noise.",
+    "If you missed yesterday, don’t chase today. Here’s the play.",
+    "One play. One unit. Same rules. Let’s work.",
+]
+
+WHY_LINES = [
+    "This is a price play. I’m taking the number, not writing fan fiction.",
+    "I’ll take it at this price. If it’s worse, I’m out. No ego.",
+    "This one’s clean: liquid market, fair entry, no weird stuff.",
+    "I’m not married to the side — I’m married to the price.",
+    "Nothing heroic. Just the best number I found with legit books.",
+    "It’s the kind of bet you forget about… which is usually a good sign.",
+]
+
+PASS_LINES = [
+    "Pass list: literally everything else unless the line gifts us something.",
+    "No extra plays. I’m not turning this into a donation drive.",
+    "If you want action, play Madden. I’m passing on the rest.",
+    "I’m not sprinkling today. One bet and I’m done.",
+    "Everything else is a watch, not a play.",
+]
+
+RECAP_LINES = [
+    "I’ll post the result tonight. Win or lose, it’s getting logged.",
+    "Recap later. No deleting. No hiding.",
+    "We’ll check back after it settles and update the record.",
+    "Result later. Same energy either way.",
+]
+
+CTA_LINES = [
+    "If you want these daily: follow + turn on notis. That’s it.",
+    "Tailing? Line shop. Flat stake. Don’t be a hero.",
+    "Follow if you’re building a bankroll, not chasing dopamine.",
+    "Notis on if you want the play when it drops.",
+]
+
+def seeded_pick(options, seed_str):
+    seed = int(hashlib.sha256(seed_str.encode()).hexdigest(), 16) % (10**8)
+    rnd = random.Random(seed)
+    return rnd.choice(options)
+
 X_CREATE_TWEET = "https://api.x.com/2/tweets"
 ODDS_BASE = "https://api.the-odds-api.com/v4"
 
