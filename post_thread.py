@@ -260,6 +260,7 @@ def build_thread(play: dict) -> list[str]:
     }
     league = sport_map.get(play.get("sport", "unknown"), play.get("sport", "unknown"))
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    nonce = hashlib.sha256(f"{stamp}{play.get('event','')}{time.time()}".encode()).hexdigest()[:6]
     seed = f"{stamp}|{play.get('event','')}|{play.get('market','')}"
     hook = seeded_pick(HOOKS, seed + "|hook")
     why = seeded_pick(WHY_LINES, seed + "|why")
@@ -273,7 +274,7 @@ def build_thread(play: dict) -> list[str]:
     meta_line = f"{play.get('event','')} | Book: {play.get('book','')}"
 
     return [
-     f"🧪 BET LAB BETS — Daily Board | {stamp}\n{hook}",
+     f"🧪 BET LAB BETS — Daily Board | {stamp} #{nonce}\n{hook}",
     "Rules:\n• 1 play/day\n• 1u flat\n• Best line or no bet\n• No chasing",
     "Record: 0–0 | +0.00u | ROI 0.0%\n(Tracking begins today.)",
     pick_line,
