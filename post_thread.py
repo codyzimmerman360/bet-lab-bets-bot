@@ -256,6 +256,12 @@ def build_thread(play: dict) -> list[str]:
     }
     league = sport_map.get(play.get("sport", "unknown"), play.get("sport", "unknown"))
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    seed = f"{stamp}|{play.get('event','')}|{play.get('market','')}"
+    hook = seeded_pick(HOOKS, seed + "|hook")
+    why = seeded_pick(WHY_LINES, seed + "|why")
+    passed = seeded_pick(PASS_LINES, seed + "|pass")
+    recap = seeded_pick(RECAP_LINES, seed + "|recap")
+    cta = seeded_pick(CTA_LINES, seed + "|cta")
     odds = play.get("odds", "")
     odds_str = f" ({odds})" if odds not in ("", None) else ""
 
@@ -263,18 +269,17 @@ def build_thread(play: dict) -> list[str]:
     meta_line = f"{play.get('event','')} | Book: {play.get('book','')}"
 
     return [
-        f"🧪 BET LAB BETS — Daily Board | {stamp}\n1 official play. Tracked. {league} today.",
-        "Rules:\n• 1 play/day\n• 1u flat\n• Best line or no bet\n• No chasing",
-        "Record: 0–0 | +0.00u | ROI 0.0%\n(Tracking begins today.)",
-        pick_line,
-        meta_line,
-        f"Price rule: {play.get('price_rule','')}",
-        "Why this made the cut:\n• Liquid market (ML/spread/total)\n• Best price across books\n• No forcing action",
-        "🚫 Pass list:\nEverything else until the number is right.",
-        "Recap tonight + record update.\nWin or lose, it gets logged.",
-        "Follow + turn on notifications if you want the daily board.\n21+ | Entertainment only.",
-    ]
-
+     f"🧪 BET LAB BETS — Daily Board | {stamp}\n{hook}",
+    "Rules:\n• 1 play/day\n• 1u flat\n• Best line or no bet\n• No chasing",
+    "Record: 0–0 | +0.00u | ROI 0.0%\n(Tracking begins today.)",
+    pick_line,
+    meta_line,
+    f"Price rule: {play.get('price_rule','')}",
+    why,
+    passed,
+    recap,
+    f"{cta}\n21+ | Entertainment only.",
+]
 
 def main():
     print("MAIN STARTED")
