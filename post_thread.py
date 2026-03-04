@@ -287,6 +287,43 @@ def build_thread(play: dict) -> list[str]:
 ]
 
 def airtable_headers():
+    
+def runs_table_id():
+    return os.environ.get("AIRTABLE_RUNS_TABLE_ID", AIRTABLE_RUNS_TABLE)
+
+def runs_url():
+    return f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{runs_table_id()}"
+
+def acquire_daily_lock(date_str: str) -> str | None:
+    """
+    Returns Airtable record_id if lock acquired, else None (already locked/posted).
+    """
+    if not AIRTABLE_TOKEN or not AIRTABLE_BASE_ID:
+        raise RuntimeError("Airtable not configured; refusing to post to avoid duplicates.")
+
+    params = {
+        "maxRecords": 1,
+        "filterByFormula": f"AND({{run_date}}='{date_str}', OR({{status}}='locked', {{status}}='posted'))"
+    }
+    r = requests.get(runs_url(), headers=airtable_headers(), params=params, timeout=30)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Airtable check failed {r.status_code}: {r.text}")
+
+    if len(r.json().get("records", [])) > 0:
+        return None
+
+    payload = {"fields": {"run_date": date_str, "status": "locked", "error": ""}}
+    r = requests.post(runs_url(), headers=airtable_headers(), json=payload, timeout=30)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Airtable lock create failed {r.status_code}: {r.text}")
+
+    return r.json()["id"]
+
+def finalize_lock(record_id: str, status: str, note: str = ""):
+    payload = {"fields": {"status": status, "error": note}}
+    r = requests.patch(f"{runs_url()}/{record_id}", headers=airtable_headers(), json=payload, timeout=30)
+    if r.status_code >= 300:
+        raise RuntimeError(f"Airtable lock finalize failed {r.status_code}: {r.text}")
     return {
         "Authorization": f"Bearer {AIRTABLE_TOKEN}",
         "Content-Type": "application/json",
