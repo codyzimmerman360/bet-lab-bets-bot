@@ -330,18 +330,11 @@ def log_posted(date_str: str, note: str = ""):
         
 def main():
     print("MAIN STARTED")
-    
+
+    # Kill switch
     if os.environ.get("BOT_ENABLED", "true").lower() != "true":
         print("BOT_DISABLED: exiting.")
         return
-
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-   try:
-    if already_posted_today(today):
-        print("Already posted today (Airtable). Exiting.")
-        return
-except Exception as e:
-    print("Airtable check failed (non-fatal):", str(e))
 
     odds_api_key = os.environ.get("ODDS_API_KEY", "")
     if not odds_api_key:
@@ -353,6 +346,16 @@ except Exception as e:
     access_secret = os.environ["X_ACCESS_TOKEN_SECRET"]
 
     auth = OAuth1(consumer_key, consumer_secret, access_token, access_secret)
+
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Airtable guard (NON-FATAL)
+    try:
+        if already_posted_today(today):
+            print("Already posted today (Airtable). Exiting.")
+            return
+    except Exception as e:
+        print("Airtable check failed (non-fatal):", str(e))
 
     play = select_daily_pick(odds_api_key)
     if not play:
@@ -390,10 +393,13 @@ except Exception as e:
         time.sleep(1.2)
 
     print(json.dumps({"first_tweet_id": first_id, "tweet_ids": posted_ids, "tweet_count": len(tweets)}))
+
+    # Airtable log (NON-FATAL)
     try:
         log_posted(today, note=f"first_tweet_id={first_id}")
     except Exception as e:
         print("Airtable log failed (non-fatal):", str(e))
+
 
 if __name__ == "__main__":
     main()
