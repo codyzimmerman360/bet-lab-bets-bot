@@ -336,9 +336,12 @@ def main():
         return
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    try:
     if already_posted_today(today):
         print("Already posted today (Airtable). Exiting.")
         return
+    except Exception as e:
+        print("Airtable check failed (non-fatal):", str(e))
 
     odds_api_key = os.environ.get("ODDS_API_KEY", "")
     if not odds_api_key:
@@ -387,8 +390,10 @@ def main():
         time.sleep(1.2)
 
     print(json.dumps({"first_tweet_id": first_id, "tweet_ids": posted_ids, "tweet_count": len(tweets)}))
-    log_posted(today, note=f"first_tweet_id={first_id}")
-
+    try:
+        log_posted(today, note=f"first_tweet_id={first_id}")
+    except Exception as e:
+        print("Airtable log failed (non-fatal):", str(e))
 
 if __name__ == "__main__":
     main()
