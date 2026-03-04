@@ -203,7 +203,7 @@ def build_thread(play: dict) -> list[str]:
         "none": "NO BET",
     }
     league = sport_map.get(play.get("sport", "unknown"), play.get("sport", "unknown"))
-
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     odds = play.get("odds", "")
     odds_str = f" ({odds})" if odds not in ("", None) else ""
 
@@ -211,7 +211,7 @@ def build_thread(play: dict) -> list[str]:
     meta_line = f"{play.get('event','')} | Book: {play.get('book','')}"
 
     return [
-        f"🧪 BET LAB BETS — Daily Board\n1 official play. Tracked. {league} today.",
+        f"🧪 BET LAB BETS — Daily Board | {stamp}\n1 official play. Tracked. {league} today.",
         "Rules:\n• 1 play/day\n• 1u flat\n• Best line or no bet\n• No chasing",
         "Record: 0–0 | +0.00u | ROI 0.0%\n(Tracking begins today.)",
         pick_line,
