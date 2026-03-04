@@ -20,7 +20,24 @@ SPORT_PRIORITY = [
 
 MARKETS = "h2h,spreads,totals"
 
+BOOK_WHITELIST = {
+    "DraftKings",
+    "FanDuel",
+    "BetMGM",
+    "Caesars",
+    "PointsBet",
+    "ESPN BET",
+    "bet365",
+    "Hard Rock Bet",
+    "Fanatics Sportsbook",
+}
 
+def normalize_book(name: str) -> str:
+    n = name.strip()
+    n = n.replace("Sportsbook", "").strip()
+    n = n.replace("Sports Book", "").strip()
+    return n
+    
 def create_tweet(auth: OAuth1, text: str, reply_to_id: str | None = None) -> str:
     payload = {"text": text}
     if reply_to_id:
@@ -76,7 +93,10 @@ def pick_one_play(events):
 
     offers = []
     for bm in event.get("bookmakers", []):
-        bname = bm.get("title") or bm.get("key") or "book"
+   bname_raw = bm.get("title") or bm.get("key") or "book"
+bname = normalize_book(bname_raw)
+if bname not in BOOK_WHITELIST:
+    continue
         for m in bm.get("markets", []):
             mkey = m.get("key")
             for o in m.get("outcomes", []):
