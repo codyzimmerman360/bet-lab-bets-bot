@@ -86,104 +86,102 @@ def pick_one_play(events):
         return None
 
     upcoming.sort(key=lambda x: x[0])
-    _, event = upcoming[0]
 
-    home = event.get("home_team")
-    away = event.get("away_team")
+    # NEW: scan upcoming games until we find one with whitelisted books + valid markets
+    for _, event in upcoming:
+        home = event.get("home_team")
+        away = event.get("away_team")
 
-    offers = []
-    for bm in event.get("bookmakers", []):
-   bname_raw = bm.get("title") or bm.get("key") or "book"
-bname = normalize_book(bname_raw)
-if bname not in BOOK_WHITELIST:
-    continue
-        for m in bm.get("markets", []):
-            mkey = m.get("key")
-            for o in m.get("outcomes", []):
-                offers.append(
-                    {
-                        "book": bname,
-                        "market": mkey,
-                        "name": o.get("name"),
-                        "price": o.get("price"),
-                        "point": o.get("point"),
-                        "sport": event.get("sport_key"),
-                        "event": f"{away} @ {home}",
-                    }
-                )
+        offers = []
+        for bm in event.get("bookmakers", []):
+            bname_raw = bm.get("title") or bm.get("key") or "book"
+            bname = normalize_book(bname_raw)
+            if bname not in BOOK_WHITELIST:
+                continue
 
-    def in_price_band(price):
-        return price is not None and (-125 <= price <= 125)
+            for m in bm.get("markets", []):
+                mkey = m.get("key")
+                for o in m.get("outcomes", []):
+                    offers.append(
+                        {
+                            "book": bname,
+                            "market": mkey,
+                            "name": o.get("name"),
+                            "price": o.get("price"),
+                            "point": o.get("point"),
+                            "sport": event.get("sport_key"),
+                            "event": f"{away} @ {home}",
+                        }
+                    )
 
-    def better_price(p_new, p_old):
-        return p_old is None or p_new > p_old
+        def in_price_band(price):
+            return price is not None and (-125 <= price <= 125)
 
-    # Moneyline (h2h)
-    h2h = [o for o in offers if o["market"] == "h2h" and in_price_band(o["price"])]
-    if h2h:
-        best = None
-        for o in h2h:
-            if best is None or better_price(o["price"], best["price"]):
-                best = o
-        return {
-            "sport": best["sport"],
-            "event": best["event"],
-            "market": "moneyline",
-            "pick": f"{best['name']} ML",
-            "odds": best["price"],
-            "book": best["book"],
-            "price_rule": f"Play only at {best['price']} or better",
-        }
+        def better_price(p_new, p_old):
+            return p_old is None or p_new > p_old
 
-    # Spreads
-    spreads = [
-        o
-        for o in offers
-        if o["market"] == "spreads"
-        and in_price_band(o["price"])
-        and o["point"] is not None
-    ]
-    if spreads:
-        best = None
-        for o in spreads:
-            if best is None or better_price(o["price"], best["price"]):
-                best = o
-        sign = "+" if best["point"] > 0 else ""
-        return {
-            "sport": best["sport"],
-            "event": best["event"],
-            "market": "spread",
-            "pick": f"{best['name']} {sign}{best['point']}",
-            "odds": best["price"],
-            "book": best["book"],
-            "price_rule": f"Play only at {best['price']} or better",
-        }
+        # Moneyline (h2h)
+        h2h = [o for o in offers if o["market"] == "h2h" and in_price_band(o["price"])]
+        if h2h:
+            best = None
+            for o in h2h:
+                if best is None or better_price(o["price"], best["price"]):
+                    best = o
+            return {
+                "sport": best["sport"],
+                "event": best["event"],
+                "market": "moneyline",
+                "pick": f"{best['name']} ML",
+                "odds": best["price"],
+                "book": best["book"],
+                "price_rule": f"Play only at {best['price']} or better",
+            }
 
-    # Totals
-    totals = [
-        o
-        for o in offers
-        if o["market"] == "totals"
-        and in_price_band(o["price"])
-        and o["point"] is not None
-    ]
-    if totals:
-        best = None
-        for o in totals:
-            if best is None or better_price(o["price"], best["price"]):
-                best = o
-        return {
-            "sport": best["sport"],
-            "event": best["event"],
-            "market": "total",
-            "pick": f"{best['name']} {best['point']}",
-            "odds": best["price"],
-            "book": best["book"],
-            "price_rule": f"Play only at {best['price']} or better",
-        }
+        # Spreads
+        spreads = [
+            o
+            for o in offers
+            if o["market"] == "spreads" and in_price_band(o["price"]) and o["point"] is not None
+        ]
+        if spreads:
+            best = None
+            for o in spreads:
+                if best is None or better_price(o["price"], best["price"]):
+                    best = o
+            sign = "+" if best["point"] > 0 else ""
+            return {
+                "sport": best["sport"],
+                "event": best["event"],
+                "market": "spread",
+                "pick": f"{best['name']} {sign}{best['point']}",
+                "odds": best["price"],
+                "book": best["book"],
+                "price_rule": f"Play only at {best['price']} or better",
+            }
 
+        # Totals
+        totals = [
+            o
+            for o in offers
+            if o["market"] == "totals" and in_price_band(o["price"]) and o["point"] is not None
+        ]
+        if totals:
+            best = None
+            for o in totals:
+                if best is None or better_price(o["price"], best["price"]):
+                    best = o
+            return {
+                "sport": best["sport"],
+                "event": best["event"],
+                "market": "total",
+                "pick": f"{best['name']} {best['point']}",
+                "odds": best["price"],
+                "book": best["book"],
+                "price_rule": f"Play only at {best['price']} or better",
+            }
+
+    # none of the upcoming games had whitelisted markets in band
     return None
-
 
 def select_daily_pick(odds_api_key: str):
     for sport in SPORT_PRIORITY:
