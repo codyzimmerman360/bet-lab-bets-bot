@@ -385,14 +385,10 @@ def main():
     auth = OAuth1(consumer_key, consumer_secret, access_token, access_secret)
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-
-    # Airtable guard (NON-FATAL)
-    try:
-        if already_posted_today(today):
-            print("Already posted today (Airtable). Exiting.")
-            return
-    except Exception as e:
-        print("Airtable check failed (non-fatal):", str(e))
+    lock_id = acquire_daily_lock(today)
+if not lock_id:
+    print("Already posted/locked today. Exiting.")
+    return
 
     play = select_daily_pick(odds_api_key)
     if not play:
@@ -433,9 +429,15 @@ def main():
 
     # Airtable log (NON-FATAL)
     try:
-        log_posted(today, note=f"first_tweet_id={first_id}")
-    except Exception as e:
-        print("Airtable log failed (non-fatal):", str(e))
+    # POSTING LOOP (your for i, text in enumerate(tweets): ... )
+    # After the loop finishes successfully:
+    finalize_lock(lock_id, "posted", note=f"first_tweet_id={first_id}")
+except Exception as e:
+    try:
+        finalize_lock(lock_id, "failed", note=str(e))
+    except Exception:
+        pass
+    raise
 
 
 if __name__ == "__main__":
