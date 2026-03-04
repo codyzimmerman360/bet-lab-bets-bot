@@ -295,8 +295,10 @@ def already_posted_today(date_str: str) -> bool:
     if not AIRTABLE_TOKEN or not AIRTABLE_BASE_ID:
         return False  # if not configured, don't block posting
 
+    runs_table = os.environ.get("AIRTABLE_RUNS_TABLE_ID", AIRTABLE_RUNS_TABLE)
+
     # filterByFormula checks if a record exists for today's date with status "posted"
-    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_RUNS_TABLE}"
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{runs_table}"
     params = {
         "maxRecords": 1,
         "filterByFormula": f"AND({{run_date}}='{date_str}', {{status}}='posted')"
@@ -311,7 +313,9 @@ def log_posted(date_str: str, note: str = ""):
     if not AIRTABLE_TOKEN or not AIRTABLE_BASE_ID:
         return
 
-    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_RUNS_TABLE}"
+    runs_table = os.environ.get("AIRTABLE_RUNS_TABLE_ID", AIRTABLE_RUNS_TABLE)
+
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{runs_table}"
     payload = {
         "fields": {
             "run_date": date_str,
