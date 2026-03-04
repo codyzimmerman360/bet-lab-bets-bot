@@ -432,12 +432,7 @@ if not lock_id:
 
     print(json.dumps({"first_tweet_id": first_id, "tweet_ids": posted_ids, "tweet_count": len(tweets)}))
 
-    # Airtable log (NON-FATAL)
-    try:
-    # POSTING LOOP (your for i, text in enumerate(tweets): ... )
-    # After the loop finishes successfully:
     finalize_lock(lock_id, "posted", note=f"first_tweet_id={first_id}")
-except Exception as e:
     try:
         finalize_lock(lock_id, "failed", note=str(e))
     except Exception:
