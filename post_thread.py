@@ -1,3 +1,5 @@
+print("BLB_BOT_VERSION=2026-03-04-CLEAN-1")
+
 import os
 import time
 import json
