@@ -336,12 +336,12 @@ def main():
         return
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    try:
+   try:
     if already_posted_today(today):
         print("Already posted today (Airtable). Exiting.")
         return
-    except Exception as e:
-        print("Airtable check failed (non-fatal):", str(e))
+except Exception as e:
+    print("Airtable check failed (non-fatal):", str(e))
 
     odds_api_key = os.environ.get("ODDS_API_KEY", "")
     if not odds_api_key:
